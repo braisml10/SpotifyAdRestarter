@@ -36,17 +36,32 @@ jobs:
             -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      # Localiza la carpeta del proyecto aunque se haya subido dentro de una subcarpeta
+      - name: Locate project
+        id: proj
+        run: |
+          f=$(find . -name settings.gradle.kts -not -path "*/build/*" | head -n1)
+          if [ -z "$f" ]; then
+            echo "No encuentro settings.gradle.kts en el repositorio. Archivos presentes:"
+            find . -not -path "./.git/*" | head -60
+            exit 1
+          fi
+          d=$(cd "$(dirname "$f")" && pwd)
+          echo "Proyecto en: $d"
+          echo "dir=$d" >> "$GITHUB_OUTPUT"
+
       - name: Build APK
+        working-directory: ${{ steps.proj.outputs.dir }}
         run: gradle assembleRelease --no-daemon --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
           name: SpotifyAdRestarter-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: ${{ steps.proj.outputs.dir }}/app/build/outputs/apk/release/*.apk
 
       # Publica el APK suelto en "Releases" (más fácil de descargar desde el móvil)
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Build ${{ github.run_number }}
-          files: app/build/outputs/apk/release/app-release.apk
+          files: ${{ steps.proj.outputs.dir }}/app/build/outputs/apk/release/app-release.apk
