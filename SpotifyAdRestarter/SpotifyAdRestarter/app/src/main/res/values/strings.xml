@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spotify Ad Restarter</string>
+    <string name="a11y_desc">Cierra y reabre Spotify cuando suena un anuncio. Solo actúa sobre la pantalla «Información de la app» de Ajustes, para pulsar «Forzar detención».</string>
+</resources>
